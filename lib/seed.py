@@ -1,16 +1,30 @@
-#!/usr/bin/env python3
-
+from app import session
+from app.models import Game
 from faker import Faker
 import random
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
 
-from models import Game
-
+# Initialize Faker and generate random data
 fake = Faker()
 
-if __name__ == '__main__':
-    
-    engine = create_engine('sqlite:///seed_db.db')
-    Session = sessionmaker(bind=engine)
-    session = Session()
+print("Seeding games...")
+
+# Clear out any existing data
+session.query(Game).delete()
+session.commit()
+
+# Create 50 random Game entries
+games = [
+    Game(
+        title=fake.name(),
+        genre=fake.word(),
+        platform=fake.word(),
+        price=random.randint(0, 60)
+    )
+    for _ in range(50)
+]
+
+# Save the generated objects to the database
+session.bulk_save_objects(games)
+session.commit()
+
+print("Seeding complete.")
